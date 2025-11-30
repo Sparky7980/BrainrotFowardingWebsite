@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Roblox Server</title>
+    <script>
+        // Function to get query parameters
+        function getQueryParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const placeId = urlParams.get('placeId');
+            const gameInstanceId = urlParams.get('gameInstanceId');
+
+            if (placeId && gameInstanceId) {
+                // Redirect to Roblox protocol
+                window.location.href = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${gameInstanceId}`;
+            } else {
+                // Display error if parameters are missing
+                document.body.innerHTML = "<h2>Error: Missing placeId or gameInstanceId parameters.</h2>";
+            }
+        }
+
+        // Run the function when the page loads
+        window.onload = getQueryParams;
+    </script>
+</head>
+<body>
+    <h1>Redirecting to Roblox...</h1>
+    <p>If you are not redirected automatically, <a href="#" onclick="getQueryParams()">click here</a>.</p>
+</body>
+</html>
