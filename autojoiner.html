@@ -1,70 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Auto Joiner</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body {
-    background:#0f0f0f;
-    color:white;
-    font-family:Arial, sans-serif;
-    text-align:center;
-    padding:40px;
-}
-#status {
-    font-size:20px;
-    margin-top:20px;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>AutoJoiner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #1c1c1c;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #status {
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-<h1>Auto Joiner</h1>
-<div id="status">Waiting for link...</div>
+    <div id="status">
+        <h2>Fetching latest server...</h2>
+        <p id="jobId">Job ID: loading...</p>
+    </div>
 
-<script>
-const updateApi = "https://linkfowardbrainrotfinder.netlify.app/.netlify/functions/update-link";
+    <script>
+        async function fetchLatestServer() {
+            try {
+                const response = await fetch('/.netlify/functions/redirect-roblox');
+                const data = await response.text();
 
-async function sendLatestToWebsite(link) {
-    try {
-        await fetch(updateApi, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ link })
-        });
-    } catch (e) {}
-}
+                // Extract jobId from URL if present
+                const jobIdMatch = data.match(/jobId=([a-zA-Z0-9\-]+)/);
+                const jobId = jobIdMatch ? jobIdMatch[1] : null;
 
-async function fetchLink() {
-    let link = "";
-    try {
-        const res = await fetch("link.txt?cache=" + Date.now());
-        link = (await res.text()).trim();
-    } catch(e) {
-        return;
-    }
+                document.getElementById('jobId').innerText = jobId ? jobId : 'No server found';
+            } catch (err) {
+                console.error(err);
+                document.getElementById('jobId').innerText = 'Error fetching server';
+            }
+        }
 
-    if (link.length < 10) return;
-
-    if (link !== window.lastLink) {
-        window.lastLink = link;
-        sendLatestToWebsite(link);
-        document.getElementById("status").innerText = "Teleporting...";
-        teleport(link);
-    }
-}
-
-function teleport(url) {
-    const match = url.match(/games\/(\d+).*jobId=([a-zA-Z0-9\-]+)/);
-    if (!match) return;
-    const place = match[1];
-    const job = match[2];
-    const protocol = `roblox://placeId=${place}&jobId=${job}`;
-    window.location.href = protocol;
-}
-
-setInterval(fetchLink, 1500);
-fetchLink();
-</script>
+        fetchLatestServer();
+        setInterval(fetchLatestServer, 5000); // refresh every 5 seconds
+    </script>
 </body>
 </html>
