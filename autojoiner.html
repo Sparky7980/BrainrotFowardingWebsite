@@ -1,1 +1,70 @@
-Auto Joiner
+<!DOCTYPE html>
+<html>
+<head>
+<title>Auto Joiner</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    background:#0f0f0f;
+    color:white;
+    font-family:Arial, sans-serif;
+    text-align:center;
+    padding:40px;
+}
+#status {
+    font-size:20px;
+    margin-top:20px;
+}
+</style>
+</head>
+<body>
+<h1>Auto Joiner</h1>
+<div id="status">Waiting for link...</div>
+
+<script>
+const updateApi = "https://linkfowardbrainrotfinder.netlify.app/.netlify/functions/update-link";
+
+async function sendLatestToWebsite(link) {
+    try {
+        await fetch(updateApi, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ link })
+        });
+    } catch (e) {}
+}
+
+async function fetchLink() {
+    let link = "";
+    try {
+        const res = await fetch("link.txt?cache=" + Date.now());
+        link = (await res.text()).trim();
+    } catch(e) {
+        return;
+    }
+
+    if (link.length < 10) return;
+
+    if (link !== window.lastLink) {
+        window.lastLink = link;
+        sendLatestToWebsite(link);
+        document.getElementById("status").innerText = "Teleporting...";
+        teleport(link);
+    }
+}
+
+function teleport(url) {
+    const match = url.match(/games\/(\d+).*jobId=([a-zA-Z0-9\-]+)/);
+    if (!match) return;
+    const place = match[1];
+    const job = match[2];
+    const protocol = `roblox://placeId=${place}&jobId=${job}`;
+    window.location.href = protocol;
+}
+
+setInterval(fetchLink, 1500);
+fetchLink();
+</script>
+</body>
+</html>
