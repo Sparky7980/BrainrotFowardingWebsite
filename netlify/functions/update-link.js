@@ -1,14 +1,24 @@
-import fs from "fs";
+import { getStore } from "@netlify/blobs";
 
-export default async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "POST only" });
+export default async (req, context) => {
+  const store = getStore("brainrot-links");
+
+  if (req.method === "POST") {
+    const body = await req.json();
+    const link = body.link || "";
+
+    await store.set("latest", link);
+
+    return new Response(
+      JSON.stringify({ success: true, link }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   }
 
-  const body = await req.json();
-  const link = body.link || "";
+  if (req.method === "GET") {
+    const latest = await store.get("latest");
+    return new Response(latest || "", { status: 200 });
+  }
 
-  fs.writeFileSync("/tmp/link.txt", link);
-
-  return res.json({ success: true, link });
+  return new Response("Method Not Allowed", { status: 405 });
 };
